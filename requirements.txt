@@ -1,0 +1,8 @@
+flask>=3.0.0
+flask-sqlalchemy>=3.1.0
+matplotlib>=3.8.0
+pytz>=2023.3
+waitress>=3.0.0
+plotly>=5.18.0
+lttbc
+pandas

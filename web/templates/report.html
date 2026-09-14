@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ t('report.title') }} - {{ task.filename }}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">
+        <div>
+            <h2>{{ t('report.card_title') }}</h2>
+            <p style="color: var(--text-muted); margin: 0.25rem 0 0 0;">{{ t('report.task_id') }}: <code>{{ task.id }}</code> | {{ t('report.filename') }}: {{ task.filename }}</p>
+        </div>
+        <a href="{{ url_for('tasks.task_list_page') }}" class="btn btn-secondary">{{ t('report.back_to_list') }}</a>
+    </div>
+
+    {% if csv_files %}
+    <div style="margin-top: 1.5rem;">
+        <h3>{{ t('report.export_csv') }}</h3>
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.5rem;">
+            {% for csv in csv_files %}
+                <a href="{{ url_for('report.get_report_file', task_id=task.id, filename=csv) }}" class="btn btn-secondary" download>
+                    {{ t('report.download_csv') }}{{ csv }}
+                </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <h3 style="margin-top: 2rem;">{{ t('report.charts_section') }}</h3>
+    {% if chart_htmls %}
+        <div style="margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.75rem; background-color: #f8fafc; padding: 0.75rem 1rem; border-radius: 6px; border: 1px solid var(--border-color);">
+            <label for="chart-select" style="font-weight: 600; color: var(--text-main); white-space: nowrap;">{{ t('report.select_chart') }}</label>
+            <select id="chart-select" onchange="switchChart(this.value)" style="padding: 0.5rem 1rem; font-size: 0.95rem; border-radius: 6px; border: 1px solid var(--border-color); background-color: #fff; cursor: pointer; flex-grow: 1; max-width: 500px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                {% for html_file in chart_htmls %}
+                    <option value="{{ url_for('report.get_report_file', task_id=task.id, filename=html_file) }}">
+                        {{ html_file.rsplit('-', 1)[0] }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="interactive-chart-card">
+            <iframe id="main-chart-iframe" 
+                    src="{{ url_for('report.get_report_file', task_id=task.id, filename=chart_htmls[0]) }}" 
+                    frameborder="0" 
+                    scrolling="no" 
+                    class="chart-iframe">
+            </iframe>
+        </div>
+    {% else %}
+        <p style="color: var(--text-muted);">{{ t('report.no_charts') }}</p>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function switchChart(url) {
+        const iframe = document.getElementById('main-chart-iframe');
+        if (iframe) {
+            iframe.src = url;
+        }
+    }
+</script>
+{% endblock %}

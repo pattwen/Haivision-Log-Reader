@@ -1,0 +1,51 @@
+from flask import Flask, request, g, make_response
+from config.sys_config import (
+    SQLALCHEMY_DATABASE_URI, 
+    SQLALCHEMY_TRACK_MODIFICATIONS, 
+    MAX_CONTENT_LENGTH,
+    DEFAULT_LANGUAGE,
+    SUPPORTED_LANGUAGES
+)
+from db.task_manager import init_db
+from web.blueprints import upload_bp, tasks_bp, report_bp
+from core.i18n_utils import init_i18n, t
+
+def create_app():
+    app = Flask(__name__)
+
+    app.config['SQLALCHEMY_DATABASE_URI'] = SQLALCHEMY_DATABASE_URI
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = SQLALCHEMY_TRACK_MODIFICATIONS
+    app.config['MAX_CONTENT_LENGTH'] = MAX_CONTENT_LENGTH
+
+    init_db(app)
+
+    @app.before_request
+    def set_global_language():
+        req_lang = request.args.get('lang') or request.cookies.get('lang') or DEFAULT_LANGUAGE
+        
+        if req_lang not in SUPPORTED_LANGUAGES:
+            req_lang = DEFAULT_LANGUAGE
+
+        g.lang = req_lang
+        init_i18n(g.lang)
+
+    @app.context_processor
+    def inject_i18n():
+        return dict(t=t, current_lang=getattr(g, 'lang', DEFAULT_LANGUAGE))
+
+    @app.route('/set_language/<lang_code>')
+    def set_language(lang_code):
+        if lang_code not in SUPPORTED_LANGUAGES:
+            lang_code = DEFAULT_LANGUAGE
+            
+        redirect_url = request.referrer or '/'
+        response = make_response(app.redirect(redirect_url))
+        
+        response.set_cookie('lang', lang_code, max_age=30*24*60*60, path='/')
+        return response
+
+    app.register_blueprint(upload_bp)
+    app.register_blueprint(tasks_bp)
+    app.register_blueprint(report_bp)
+
+    return app

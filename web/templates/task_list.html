@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ t('tasks.title') }}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h2>{{ t('tasks.card_title') }}</h2>
+        <a href="{{ url_for('upload.upload_page') }}" class="btn btn-primary">{{ t('tasks.add_new') }}</a>
+    </div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>{{ t('tasks.col_id') }}</th>
+                    <th>{{ t('tasks.col_filename') }}</th>
+                    <th>{{ t('tasks.col_upload_time') }}</th>
+                    <th>{{ t('tasks.col_status') }}</th>
+                    <th>{{ t('tasks.col_action') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for task in tasks %}
+                <tr>
+                    <td><code>{{ task.id }}</code></td>
+                    <td>{{ task.filename }}</td>
+                    <td>{{ task.created_at.strftime('%Y-%m-%d %H:%M:%S') if task.created_at else '-' }}</td>
+                    <td>
+                        <span class="badge badge-{{ task.status }}">{{ task.status }}</span>
+                        {% if task.status == 'Failed' and task.error_msg %}
+                            <p style="color: #dc2626; font-size: 0.75rem; margin: 0.25rem 0 0 0;">{{ t('tasks.error_prefix') }}{{ task.error_msg }}</p>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if task.status == 'Pending' %}
+                            <button id="btn-analyze-{{ task.id }}" onclick="startAnalysis('{{ task.id }}')" class="btn btn-primary">{{ t('tasks.btn_start') }}</button>
+                        {% elif task.status == 'Processing' %}
+                            <button class="btn btn-secondary" disabled>{{ t('tasks.btn_processing') }}</button>
+                        {% elif task.status == 'Completed' %}
+                            <a href="{{ url_for('report.view_report', task_id=task.id) }}" class="btn btn-secondary">{{ t('tasks.btn_view') }}</a>
+                        {% elif task.status == 'Failed' %}
+                            <button id="btn-analyze-{{ task.id }}" onclick="startAnalysis('{{ task.id }}')" class="btn btn-primary">{{ t('tasks.btn_reanalyze') }}</button>
+                        {% endif %}
+
+                        <button onclick="deleteTask('{{ task.id }}')" class="btn btn-danger" style="margin-left: 0.5rem;">{{ t('tasks.btn_delete') }}</button>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 2rem;">{{ t('tasks.empty') }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

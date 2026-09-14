@@ -1,0 +1,63 @@
+{
+  "nav": {
+    "brand": "Haivision Log Analyzer",
+    "upload": "Upload Log",
+    "tasks": "Task Management"
+  },
+  "upload": {
+    "title": "Upload Log File - Haivision Log Reader",
+    "card_title": "Upload Haivision Log File",
+    "support_hint": "Supports uploading .json log files.",
+    "drag_hint": "Click here to select a file, or drag and drop a log file here",
+    "format_limit": "Format Limit: .json"
+  },
+  "tasks": {
+    "title": "Task Management - Haivision Log Analyzer",
+    "card_title": "Analysis Task List",
+    "add_new": "+ Upload New",
+    "col_id": "Task ID",
+    "col_filename": "Original Filename",
+    "col_upload_time": "Upload Time",
+    "col_status": "Status",
+    "col_action": "Action",
+    "error_prefix": "Error: ",
+    "btn_start": "Start Analysis",
+    "btn_processing": "Processing...",
+    "btn_view": "View Results",
+    "btn_reanalyze": "Re-analyze",
+    "btn_delete": "Delete",
+    "empty": "No analysis tasks found. Please upload a log file first."
+  },
+  "report": {
+    "title": "Log Analysis Report",
+    "card_title": "Log Analysis Report",
+    "task_id": "Task ID",
+    "filename": "File Name",
+    "back_to_list": "Back to Task List",
+    "export_csv": "Export CSV Data Table",
+    "download_csv": "Download CSV File: ",
+    "charts_section": "Data Visualization Charts",
+    "select_chart": "Select Chart:",
+    "no_charts": "No data visualization charts generated."
+  },
+  "consolelog":{
+    "Original_file_notfound": "Original log file not found:",
+    "export_html_done": "Successfully exported interactive chart:",
+    "analysis_done": "Task analysis and chart generation complete!",
+    "DB_connect_done": "Initialization of database connection and table structure checks is complete."
+  },
+  "htmlreturn":{
+    "mission_notfound": "The specified task was not found",
+    "mission_state_wrong": "The current task status is abnormal; the analysis results cannot be viewed.",
+    "logfile_deleted": "The analysis result file storage is abnormal or the file has been deleted.",
+    "analysis_task_error": "An exception occurred during the analysis process:",
+    "mission_notexist": "Task does not exist",
+    "mission_analysing": "The task is currently being analyzed; please do not repeat the operation.",
+    "mission_started": "Task analysis has started",
+    "mission_file_deleted": "Tasks and stored files have been deleted",
+    "upload_file_notexist": "No uploaded file detected",
+    "upload_file_notselect": "No file selected",
+    "upload_file_success": "File uploaded successfully",
+    "upload_file_supportonly": "Supports only .json"
+  }
+}

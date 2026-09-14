@@ -1,0 +1,63 @@
+{
+  "nav": {
+    "brand": "Haivision 日志分析系统",
+    "upload": "上传日志",
+    "tasks": "任务管理"
+  },
+  "upload": {
+    "title": "上传日志文件 - Haivision Log Reader",
+    "card_title": "上传 Haivision Log 文件",
+    "support_hint": "支持上传 .json 日志文件。",
+    "drag_hint": "点击此处选择文件，或拖拽日志文件到此区域",
+    "format_limit": "格式限制：.json"
+  },
+  "tasks": {
+    "title": "任务管理 - Haivision日志分析系统",
+    "card_title": "分析任务列表",
+    "add_new": "+ 新增上传",
+    "col_id": "Task ID",
+    "col_filename": "原始文件名",
+    "col_upload_time": "上传时间",
+    "col_status": "当前状态",
+    "col_action": "操作",
+    "error_prefix": "错误: ",
+    "btn_start": "开始分析",
+    "btn_processing": "分析中...",
+    "btn_view": "查看结果",
+    "btn_reanalyze": "重新分析",
+    "btn_delete": "删除",
+    "empty": "暂无日志分析任务，请先上传文件。"
+  },
+  "report": {
+    "title": "日志分析报告",
+    "card_title": "日志分析报告",
+    "task_id": "Task ID",
+    "filename": "文件名",
+    "back_to_list": "返回任务列表",
+    "export_csv": "导出 CSV 数据表",
+    "download_csv": "下载 CSV 文件: ",
+    "charts_section": "数据可视化图表",
+    "select_chart": "选择图表：",
+    "no_charts": "暂无生成的数据可视化图表。"
+  },
+  "consolelog":{
+    "Original_file_notfound": "找不到原始日志文件:",
+    "export_html_done": "成功导出交互图表:",
+    "analysis_done": "任务分析与图表生成完毕!",
+    "DB_connect_done": "数据库连接及表结构检查初始化完成。"
+  },
+  "htmlreturn":{
+    "mission_notfound": "未找到指定的任务",
+    "mission_state_wrong": "当前任务状态异常，无法查看分析结果。",
+    "logfile_deleted": "分析结果文件存储异常或已被删除。",
+    "analysis_task_error": "分析过程发生异常:",
+    "mission_notexist": "任务不存在",
+    "mission_analysing": "任务正在分析中，请勿重复操作。",
+    "mission_started": "已开始分析任务",
+    "mission_file_deleted": "任务及存储文件已删除",
+    "upload_file_notexist": "未检测到上传文件",
+    "upload_file_notselect": "未选择文件",
+    "upload_file_success": "文件上传成功",
+    "upload_file_supportonly": "仅支持 .json"
+  }
+}
