@@ -14,7 +14,7 @@
   "tasks": {
     "title": "任务管理 - Haivision日志分析系统",
     "card_title": "分析任务列表",
-    "add_new": "+ 新增上传",
+    "add_new": "新增上传",
     "col_id": "Task ID",
     "col_filename": "原始文件名",
     "col_upload_time": "上传时间",
@@ -26,7 +26,11 @@
     "btn_view": "查看结果",
     "btn_reanalyze": "重新分析",
     "btn_delete": "删除",
-    "empty": "暂无日志分析任务，请先上传文件。"
+    "empty": "暂无日志分析任务，请先上传文件。",
+    "page_prev": "上一页",
+    "page_next": "下一页",
+    "page_total_prefix": "共 ",
+    "page_total_suffix": " 条记录"
   },
   "report": {
     "title": "日志分析报告",
@@ -56,6 +60,7 @@
     "mission_started": "已开始分析任务",
     "mission_file_deleted": "任务及存储文件已删除",
     "upload_file_notexist": "未检测到上传文件",
+    "max_task_count": "日志解析队列已达最大限制",
     "upload_file_notselect": "未选择文件",
     "upload_file_success": "文件上传成功",
     "upload_file_supportonly": "仅支持 .json"

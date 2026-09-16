@@ -1,0 +1,32 @@
+# 排除Git版本控制文件
+.git
+.gitignore
+
+# 排除本地的虚拟环境
+venv/
+.venv/
+env/
+
+# 排除Python缓存和编译文件
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# 排除开发工具配置
+.vscode/
+.idea/
+
+# 排除本地生成的日志、图表或临时输出
+*.log
+output/
+*.png
+*.csv
+
+# 排除LICENSE和已有的Docker压缩包
+LICENSE
+*.tar
+Dockerfile
+
+# 排除readme
+README.md

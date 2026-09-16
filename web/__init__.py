@@ -1,4 +1,5 @@
-from flask import Flask, request, g, make_response
+from flask import Flask, request, g, make_response, redirect, url_for
+from utils.time_utils import TIMEZONE_CONFIG, get_timezone_display_name
 from config.sys_config import (
     SQLALCHEMY_DATABASE_URI, 
     SQLALCHEMY_TRACK_MODIFICATIONS, 
@@ -33,15 +34,27 @@ def create_app():
     def inject_i18n():
         return dict(t=t, current_lang=getattr(g, 'lang', DEFAULT_LANGUAGE))
 
+    @app.context_processor
+    def inject_timezones():
+        current_tz = request.cookies.get('user_timezone', 'Asia/Shanghai')
+        return dict(timezones=TIMEZONE_CONFIG, get_tz_display=get_timezone_display_name, current_tz=current_tz)
+
     @app.route('/set_language/<lang_code>')
     def set_language(lang_code):
         if lang_code not in SUPPORTED_LANGUAGES:
             lang_code = DEFAULT_LANGUAGE
             
         redirect_url = request.referrer or '/'
-        response = make_response(app.redirect(redirect_url))
+        response = make_response(redirect(redirect_url))
         
         response.set_cookie('lang', lang_code, max_age=30*24*60*60, path='/')
+        return response
+
+    @app.route('/set_timezone/<path:tz_key>')
+    def set_timezone(tz_key):
+        redirect_url = request.referrer or url_for('tasks.task_list_page')
+        response = make_response(redirect(redirect_url))
+        response.set_cookie('user_timezone', tz_key, max_age=30*24*3600, path='/')
         return response
 
     app.register_blueprint(upload_bp)

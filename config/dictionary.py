@@ -1,4 +1,3 @@
-# 日志指标键名 中文显示名称 映射表
 METRIC_NAME_MAP = {
     'bandwidth': '带宽占用',
     'bitrate': '码率',

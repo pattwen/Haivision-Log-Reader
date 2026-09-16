@@ -1,8 +1,8 @@
 import shutil
 import os
+import math
 import threading
-from flask import Blueprint, render_template, jsonify, current_app
-
+from flask import Blueprint, render_template, jsonify, current_app, request
 from db.task_manager import get_all_tasks, get_task_by_id, update_task_status, delete_task
 from core.log_processor import process_log_task
 from config.sys_config import STORAGE_UPLOADS_DIR, STORAGE_RESULTS_DIR
@@ -10,11 +10,11 @@ from core.i18n_utils import t as lag
 
 tasks_bp = Blueprint('tasks', __name__)
 
-def async_analyze_log(app, task_id: str):
+def async_analyze_log(app, task_id: str, target_tz_key: str = 'Asia/Shanghai'):
     with app.app_context():
         try:
             update_task_status(task_id, status='Processing')
-            process_log_task(task_id)
+            process_log_task(task_id, target_tz_key=target_tz_key)
             update_task_status(task_id, status='Completed')
         except Exception as e:
             error_msg = str(e)
@@ -23,8 +23,24 @@ def async_analyze_log(app, task_id: str):
 
 @tasks_bp.route('/tasks', methods=['GET'])
 def task_list_page():
-    tasks = get_all_tasks()
-    return render_template('task_list.html', tasks=tasks)
+    page = request.args.get('page', 1, type=int)
+    per_page = 10
+
+    all_tasks = get_all_tasks()
+    total_tasks = len(all_tasks)
+    
+    total_pages = math.ceil(total_tasks / per_page) if total_tasks > 0 else 1
+    
+    if page < 1:
+        page = 1
+    elif page > total_pages:
+        page = total_pages
+
+    start = (page - 1) * per_page
+    end = start + per_page
+    tasks = all_tasks[start:end]
+
+    return render_template('task_list.html', tasks=tasks, current_page=page, total_pages=total_pages, total_tasks=total_tasks)
 
 @tasks_bp.route('/api/tasks', methods=['GET'])
 def get_tasks_api():
@@ -40,9 +56,9 @@ def trigger_analysis(task_id):
     if task.status == 'Processing':
         return jsonify({'success': False, 'message': lag('htmlreturn.mission_analysing')}), 400
 
+    user_tz = request.cookies.get('user_timezone', 'Asia/Shanghai')
     app = current_app._get_current_object()
-
-    thread = threading.Thread(target=async_analyze_log, args=(app, task_id))
+    thread = threading.Thread(target=async_analyze_log, args=(app, task_id, user_tz))
     thread.start()
 
     return jsonify({'success': True, 'message': lag('htmlreturn.mission_started'), 'task_id': task_id})

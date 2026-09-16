@@ -1,10 +1,9 @@
 import os
 from flask import Blueprint, render_template, request, jsonify, redirect, url_for
 from werkzeug.utils import secure_filename
-
-from config.sys_config import STORAGE_UPLOADS_DIR, ALLOWED_EXTENSIONS
+from config.sys_config import STORAGE_UPLOADS_DIR, ALLOWED_EXTENSIONS, MAX_TASK_COUNT
 from utils.id_generator import generate_task_id
-from db.task_manager import create_task
+from db.task_manager import create_task, get_all_tasks_count
 from core.i18n_utils import t as lag
 
 upload_bp = Blueprint('upload', __name__)
@@ -25,7 +24,10 @@ def handle_upload():
     file = request.files['file']
     if file.filename == '':
         return jsonify({'success': False, 'message': lag('htmlreturn.upload_file_notselect')}), 400
-
+    
+    if get_all_tasks_count() >= MAX_TASK_COUNT:
+        return jsonify({'success': False, 'message': lag('htmlreturn.max_task_count')}), 400
+    
     if file and allowed_file(file.filename):
         task_id = generate_task_id()
         original_filename = secure_filename(file.filename) or file.filename

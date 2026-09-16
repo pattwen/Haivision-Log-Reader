@@ -8,7 +8,13 @@ import plotly.graph_objects as go
 
 from config.sys_config import STORAGE_UPLOADS_DIR, STORAGE_RESULTS_DIR
 from config.dictionary import get_chinese_name
-from utils.time_utils import timestamp_to_bj_datetime, format_to_iso, UTC_TZ
+from utils.time_utils import (
+    timestamp_to_target_datetime, 
+    get_timezone_info, 
+    format_to_iso, 
+    UTC_TZ, 
+    DEFAULT_TIMEZONE_KEY
+)
 from core.i18n_utils import t as lag
 
 
@@ -126,8 +132,7 @@ def detect_srt_anomalies(x_times, y_values, metric_name=""):
 
     return anomaly_x, anomaly_y
 
-
-def process_log_task(task_id: str) -> bool:
+def process_log_task(task_id: str, target_tz_key: str = DEFAULT_TIMEZONE_KEY) -> bool:
     input_dir = os.path.join(STORAGE_UPLOADS_DIR, task_id)
     output_dir = os.path.join(STORAGE_RESULTS_DIR, task_id)
     json_path = os.path.join(input_dir, "log.json")
@@ -137,10 +142,13 @@ def process_log_task(task_id: str) -> bool:
         
     os.makedirs(output_dir, exist_ok=True)
 
+    tz_info = get_timezone_info(target_tz_key)
+    local_time_header = tz_info["header_name"]
+
     with open(json_path, 'r', encoding='utf-8') as f:
         data = json.load(f)
 
-    print(f"[{task_id}] Starting to process logs.")
+    print(f"[{task_id}] Starting to process logs with timezone: {target_tz_key} ({local_time_header})")
     print(f"[{task_id}] Total number of top-level data items: {len(data)}")
 
     index = 0
@@ -181,7 +189,7 @@ def process_log_task(task_id: str) -> bool:
 
                 with open(csv_filename, 'w', newline='', encoding='utf-8-sig') as csvfile:
                     datawriter = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-                    datawriter.writerow(["北京时间", "UTC时间", "传输方向", "流名称", "IP地址", "端口", full_display_name])
+                    datawriter.writerow([local_time_header, "UTC Time", "Direction", "Stream Name", "IP Address", "Port ", full_display_name])
 
                     for value in values:
                         if not value or len(value) < 2:
@@ -190,11 +198,11 @@ def process_log_task(task_id: str) -> bool:
                         ms_timestamp = value[0]
                         val = value[1]
 
-                        dt_bj = timestamp_to_bj_datetime(ms_timestamp)
-                        dt_utc = dt_bj.astimezone(UTC_TZ)
+                        dt_target = timestamp_to_target_datetime(ms_timestamp, target_tz_key)
+                        dt_utc = dt_target.astimezone(UTC_TZ)
 
                         datawriter.writerow([
-                            format_to_iso(dt_bj), 
+                            format_to_iso(dt_target), 
                             format_to_iso(dt_utc),
                             stream_info["direction"],
                             stream_info["stream_name"],
@@ -203,7 +211,7 @@ def process_log_task(task_id: str) -> bool:
                             val
                         ])
 
-                        x_times.append(dt_bj.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3])
+                        x_times.append(dt_target.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3])
                         
                         if isinstance(val, (int, float)):
                             y_values.append(val)
@@ -222,7 +230,7 @@ def process_log_task(task_id: str) -> bool:
                     mode='lines', 
                     name=full_display_name,
                     line=dict(width=1.5, color='#2563eb'),
-                    hovertemplate='<b>时间</b>: %{x}<br><b>数值</b>: %{y}<extra></extra>'
+                    hovertemplate=f'<b>{local_time_header}</b>: %{{x}}<br><b>Value</b>: %{{y}}<extra></extra>'
                 ))
 
                 anom_x, anom_y = detect_srt_anomalies(x_times, y_values, zh_metric_name)
@@ -231,9 +239,9 @@ def process_log_task(task_id: str) -> bool:
                         x=anom_x,
                         y=anom_y,
                         mode='markers',
-                        name='数据异常点',
+                        name='Warning',
                         marker=dict(color='#ef4444', size=7, symbol='x-open'),
-                        hovertemplate='<b>[Warning]</b><br>时间: %{x}<br>Value: <b>%{y}</b><extra></extra>'
+                        hovertemplate='<b>[Warning]</b><br>Time: %{x}<br>Value: <b>%{y}</b><extra></extra>'
                     ))
                 fig.update_layout(
                     title=dict(
@@ -251,7 +259,7 @@ def process_log_task(task_id: str) -> bool:
                         font_family="Monospace"
                     ),
                     xaxis=dict(
-                        title=dict(text="北京时间", font=dict(size=12, color="#475569")),
+                        title=dict(text=local_time_header, font=dict(size=12, color="#475569")),
                         tickformat="%m-%d\n%H:%M:%S",
                         showgrid=True,
                         gridcolor="#f1f5f9",

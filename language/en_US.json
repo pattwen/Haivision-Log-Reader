@@ -14,7 +14,7 @@
   "tasks": {
     "title": "Task Management - Haivision Log Analyzer",
     "card_title": "Analysis Task List",
-    "add_new": "+ Upload New",
+    "add_new": "Upload New",
     "col_id": "Task ID",
     "col_filename": "Original Filename",
     "col_upload_time": "Upload Time",
@@ -26,7 +26,11 @@
     "btn_view": "View Results",
     "btn_reanalyze": "Re-analyze",
     "btn_delete": "Delete",
-    "empty": "No analysis tasks found. Please upload a log file first."
+    "empty": "No analysis tasks found. Please upload a log file first.",
+    "page_prev": "Previous",
+    "page_next": "Next",
+    "page_total_prefix": "Total ",
+    "page_total_suffix": " records"
   },
   "report": {
     "title": "Log Analysis Report",
@@ -56,6 +60,7 @@
     "mission_started": "Task analysis has started",
     "mission_file_deleted": "Tasks and stored files have been deleted",
     "upload_file_notexist": "No uploaded file detected",
+    "max_task_count": "Log parsing queue is full",
     "upload_file_notselect": "No file selected",
     "upload_file_success": "File uploaded successfully",
     "upload_file_supportonly": "Supports only .json"

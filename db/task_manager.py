@@ -32,6 +32,9 @@ def get_task_by_id(task_id: str) -> Optional[Task]:
 def get_all_tasks() -> List[Task]:
     return Task.query.order_by(Task.created_at.desc()).all()
 
+def get_all_tasks_count() -> int:
+    return Task.query.count()
+
 def update_task_status(task_id: str, status: str, error_msg: Optional[str] = None) -> Optional[Task]:
     task = get_task_by_id(task_id)
     if task:

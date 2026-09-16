@@ -6,14 +6,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Haivision Log Reader{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/all.min.css') }}">
 </head>
 
 <body>
     <nav class="navbar">
         <a href="{{ url_for('upload.upload_page') }}" class="brand">{{ t('nav.brand') }}</a>
-        <div class="nav-links" style="display: flex; align-items: center; gap: 1.5rem;">
+        <div class="nav-links" style="display: flex; align-items: center; gap: 1rem;">
             <a href="{{ url_for('upload.upload_page') }}">{{ t('nav.upload') }}</a>
             <a href="{{ url_for('tasks.task_list_page') }}">{{ t('nav.tasks') }}</a>
+
+            <select id="tz-selector" onchange="location.href='/set_timezone/' + this.value;"
+                style="padding: 0.25rem 0.5rem; font-size: 0.875rem; border-radius: 4px; border: 1px solid var(--border-color); background-color: #fff; cursor: pointer;">
+                {% for tz_key in timezones.keys() %}
+                <option value="{{ tz_key }}" {% if current_tz==tz_key %}selected{% endif %}>
+                    {{ get_tz_display(tz_key, current_lang) }}
+                </option>
+                {% endfor %}
+            </select>
 
             <select id="lang-selector" onchange="location.href='/set_language/' + this.value;"
                 style="padding: 0.25rem 0.5rem; font-size: 0.875rem; border-radius: 4px; border: 1px solid var(--border-color); background-color: #fff; cursor: pointer;">
@@ -35,5 +45,4 @@
     </script>
     {% block scripts %}{% endblock %}
 </body>
-
 </html>
