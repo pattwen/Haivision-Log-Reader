@@ -1,3 +1,4 @@
+# 中文的映射
 METRIC_NAME_MAP = {
     'bandwidth': '带宽占用',
     'bitrate': '码率',
@@ -19,6 +20,30 @@ METRIC_NAME_MAP = {
     'srtPacketLossRate': 'srt丢包率'
 }
 
+# 英文的映射
+METRIC_NAME_MAP_EN = {
+    'bandwidth': 'Bandwidth Usage',
+    'bitrate': 'Bitrate',
+    'cpu_usage': 'CPU Utilization',
+    'latency': 'Latency',
+    'mem_usage': 'Memory Usage',
+    'numpackets': 'Number of Transmitted Packets',
+    'packetloss': 'TS Packet Loss',
+    'retransmitrate': 'Retransmitted Packets',
+    'roundtriptime': 'RTT',
+    'signalLosses': 'Signal Loss',
+    'srtBufferLevel': 'Real-time Buffer Level',
+    'srtEstimatedBandwidth': 'Estimated Available Bandwidth',
+    'srtNumLostPackets': 'Number of Lost Packets',
+    'srtNumSkippedPackets': 'Number of Skipped Packets',
+    'vmem_usage': 'Virtual Memory Usage',
+    'srtDroppedPackets': 'SRT Dropped Packets (Suspected Deprecated)',
+    'srtMaxBandwidth': 'Maximum Bandwidth Usage',
+    'srtPacketLossRate': 'SRT Packet Loss Rate'
+}
+
 def get_chinese_name(key: str) -> str:
     return METRIC_NAME_MAP.get(key, key)
 
+def get_english_name(key: str) -> str:
+    return METRIC_NAME_MAP_EN.get(key, key)

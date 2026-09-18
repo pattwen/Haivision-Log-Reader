@@ -2,21 +2,35 @@ import os
 import json
 import config.sys_config as config
 
-CURRENT_LANG = config.DEFAULT_LANGUAGE
+_raw_lang = getattr(config, 'DEFAULT_LANGUAGE', 'zh_CN')
+if isinstance(_raw_lang, list):
+    CURRENT_LANG = _raw_lang[0] if len(_raw_lang) > 0 else "zh_CN"
+else:
+    CURRENT_LANG = str(_raw_lang) if _raw_lang else "zh_CN"
+
 LANG_DATA = {}
+
+def get_current_lang() -> str:
+    global CURRENT_LANG
+    if isinstance(CURRENT_LANG, list):
+        return CURRENT_LANG[0] if len(CURRENT_LANG) > 0 else "zh_CN"
+    return str(CURRENT_LANG) if CURRENT_LANG else "zh_CN"
 
 def init_i18n(lang_code: str = "zh_CN") -> None:
     global CURRENT_LANG, LANG_DATA
-    CURRENT_LANG = lang_code
+    
+    if isinstance(lang_code, list):
+        lang_code = lang_code[0] if len(lang_code) > 0 else "zh_CN"
+        
+    CURRENT_LANG = str(lang_code) if lang_code else "zh_CN"
     
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    lang_file_path = os.path.join(base_dir, "language", f"{lang_code}.json")
+    lang_file_path = os.path.join(base_dir, "language", f"{CURRENT_LANG}.json")
     
     if os.path.exists(lang_file_path):
         with open(lang_file_path, "r", encoding="utf-8") as f:
             LANG_DATA = json.load(f)
     else:
-        print(f"[Warning] Language configuration file not found: {lang_file_path}，the key value will be used for display by default.")
         LANG_DATA = {}
 
 def t(key_path: str, **kwargs) -> str:

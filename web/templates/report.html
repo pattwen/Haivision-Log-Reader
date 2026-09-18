@@ -18,7 +18,7 @@
         <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.5rem;">
             {% for csv in csv_files %}
                 <a href="{{ url_for('report.get_report_file', task_id=task.id, filename=csv) }}" class="btn btn-secondary" download>
-                    {{ t('report.download_csv') }}{{ csv }}
+                    <i class="fa-solid fa-file-csv" style="margin-right: 0.25rem;"></i>{{ csv }}
                 </a>
             {% endfor %}
         </div>

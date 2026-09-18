@@ -35,14 +35,24 @@ def get_all_tasks() -> List[Task]:
 def get_all_tasks_count() -> int:
     return Task.query.count()
 
-def update_task_status(task_id: str, status: str, error_msg: Optional[str] = None) -> Optional[Task]:
-    task = get_task_by_id(task_id)
+def update_task_status(task_id: str, status: str, error_msg: str = None, analysis_timezone: str = None):
+    task = Task.query.get(task_id)
     if task:
         task.status = status
         if error_msg is not None:
             task.error_msg = error_msg
+        if analysis_timezone is not None:
+            task.analysis_timezone = analysis_timezone
         db.session.commit()
     return task
+
+def update_task_mnemonic(task_id: str, mnemonic_name: str):
+    task = Task.query.get(task_id)
+    if task:
+        task.mnemonic_name = mnemonic_name.strip() if mnemonic_name else ""
+        db.session.commit()
+        return True
+    return False
 
 def delete_task(task_id: str) -> bool:
     task = get_task_by_id(task_id)

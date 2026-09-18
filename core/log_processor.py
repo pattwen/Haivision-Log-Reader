@@ -5,9 +5,9 @@ from urllib.parse import unquote
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
-
+from db.task_manager import update_task_status
 from config.sys_config import STORAGE_UPLOADS_DIR, STORAGE_RESULTS_DIR
-from config.dictionary import get_chinese_name
+from config.dictionary import get_chinese_name, get_english_name
 from utils.time_utils import (
     timestamp_to_target_datetime, 
     get_timezone_info, 
@@ -17,11 +17,46 @@ from utils.time_utils import (
 )
 from core.i18n_utils import t as lag
 
+CN_PATH = "zh_CN"
+EN_PATH = "en_US"
 
-def parse_stream_info(tags: dict) -> dict:
+def get_i18n_texts(lang_code: str) -> dict:
+    if lang_code == EN_PATH:
+        return {
+            "dir_in": "Input",
+            "dir_out": "Output",
+            "dir_unknown": "Unknown",
+            "csv_utc": "UTC Time",
+            "csv_dir": "Direction",
+            "csv_stream": "Stream Name",
+            "csv_ip": "IP Address",
+            "csv_port": "Port",
+            "hover_val": "Value",
+            "warn_title": "Warning",
+            "warn_time": "Time",
+        }
+    else:
+        return {
+            "dir_in": "输入",
+            "dir_out": "输出",
+            "dir_unknown": "未知",
+            "csv_utc": "UTC 时间",
+            "csv_dir": "传输方向",
+            "csv_stream": "节目名称",
+            "csv_ip": "IP 地址",
+            "csv_port": "端口",
+            "hover_val": "值",
+            "warn_title": "警告",
+            "warn_time": "时间",
+        }
+
+
+def parse_stream_info(tags: dict, lang_code: str = CN_PATH) -> dict:
+    texts = get_i18n_texts(lang_code)
+    
     if not tags:
         return {
-            "direction": "未知",
+            "direction": texts["dir_unknown"],
             "stream_name": "",
             "ip": "",
             "port": "",
@@ -39,13 +74,13 @@ def parse_stream_info(tags: dict) -> dict:
     port = str(tags.get("port", "")).strip()
 
     if input_name:
-        direction = "输入"
+        direction = texts["dir_in"]
         stream_name = input_name
     elif output_name:
-        direction = "输出"
+        direction = texts["dir_out"]
         stream_name = output_name
     else:
-        direction = "未知"
+        direction = texts["dir_unknown"]
         stream_name = ""
 
     formatted_ip = f"ipaddr-{ip.replace('.', '_')}" if ip else ""
@@ -54,7 +89,7 @@ def parse_stream_info(tags: dict) -> dict:
     file_tag_parts = []
     if stream_name:
         file_tag_parts.append(f"{direction}{stream_name}")
-    elif direction != "未知":
+    elif direction != texts["dir_unknown"]:
         file_tag_parts.append(direction)
 
     if formatted_ip:
@@ -132,24 +167,20 @@ def detect_srt_anomalies(x_times, y_values, metric_name=""):
 
     return anomaly_x, anomaly_y
 
-def process_log_task(task_id: str, target_tz_key: str = DEFAULT_TIMEZONE_KEY) -> bool:
-    input_dir = os.path.join(STORAGE_UPLOADS_DIR, task_id)
-    output_dir = os.path.join(STORAGE_RESULTS_DIR, task_id)
-    json_path = os.path.join(input_dir, "log.json")
-    
-    if not os.path.exists(json_path):
-        raise FileNotFoundError(f"{lag('consolelog.Original_file_notfound')} {json_path}")
-        
+
+def _process_single_language(task_id: str, data: list, target_tz_key: str, lang_code: str) -> None:
+    output_dir = os.path.join(STORAGE_RESULTS_DIR, task_id, lang_code)
     os.makedirs(output_dir, exist_ok=True)
 
+    texts = get_i18n_texts(lang_code)
     tz_info = get_timezone_info(target_tz_key)
-    local_time_header = tz_info["header_name"]
 
-    with open(json_path, 'r', encoding='utf-8') as f:
-        data = json.load(f)
-
-    print(f"[{task_id}] Starting to process logs with timezone: {target_tz_key} ({local_time_header})")
-    print(f"[{task_id}] Total number of top-level data items: {len(data)}")
+    if lang_code == CN_PATH:
+        local_time_header = tz_info.get("header_name_cn") or tz_info.get("header_name", "Local Time")
+    else:
+        local_time_header = tz_info.get("header_name", "Local Time")
+    local_time_header = local_time_header + f' ({tz_info.get("utc_offset")})' or ''
+    print(f"[{task_id}] Generating [{lang_code}] log reports into: {output_dir}")
 
     index = 0
     items = data if isinstance(data, list) else [data]
@@ -163,16 +194,20 @@ def process_log_task(task_id: str, target_tz_key: str = DEFAULT_TIMEZONE_KEY) ->
             series_list = res.get("series", [])
             for series_data in series_list:
                 en_jsonName = series_data.get("name", "unknown")
-                zh_metric_name = get_chinese_name(en_jsonName) or en_jsonName
+                
+                if lang_code == EN_PATH:
+                    metric_name = get_english_name(en_jsonName) or en_jsonName
+                else:
+                    metric_name = get_chinese_name(en_jsonName) or en_jsonName
                 
                 tags = series_data.get("tags", {})
-                stream_info = parse_stream_info(tags)
+                stream_info = parse_stream_info(tags, lang_code=lang_code)
                 
                 file_tag = stream_info["file_tag"]
                 display_label = stream_info["display_label"]
                 
-                full_display_name = f"{zh_metric_name} ({display_label})" if display_label else zh_metric_name
-                file_prefix_name = f"{zh_metric_name}_{file_tag}" if file_tag else zh_metric_name
+                full_display_name = f"{metric_name} ({display_label})" if display_label else metric_name
+                file_prefix_name = f"{metric_name}_{file_tag}" if file_tag else metric_name
                 
                 safe_file_prefix = "".join(
                     c for c in file_prefix_name 
@@ -189,7 +224,15 @@ def process_log_task(task_id: str, target_tz_key: str = DEFAULT_TIMEZONE_KEY) ->
 
                 with open(csv_filename, 'w', newline='', encoding='utf-8-sig') as csvfile:
                     datawriter = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-                    datawriter.writerow([local_time_header, "UTC Time", "Direction", "Stream Name", "IP Address", "Port ", full_display_name])
+                    datawriter.writerow([
+                        local_time_header, 
+                        texts["csv_utc"], 
+                        texts["csv_dir"], 
+                        texts["csv_stream"], 
+                        texts["csv_ip"], 
+                        texts["csv_port"], 
+                        full_display_name
+                    ])
 
                     for value in values:
                         if not value or len(value) < 2:
@@ -222,7 +265,7 @@ def process_log_task(task_id: str, target_tz_key: str = DEFAULT_TIMEZONE_KEY) ->
 
                 fig = go.Figure()
 
-                opt_x, opt_y = min_max_downsample(x_times, y_values, max_points=6000)
+                opt_x, opt_y = min_max_downsample(x_times, y_values, max_points=10000)
 
                 fig.add_trace(go.Scatter(
                     x=opt_x, 
@@ -230,19 +273,20 @@ def process_log_task(task_id: str, target_tz_key: str = DEFAULT_TIMEZONE_KEY) ->
                     mode='lines', 
                     name=full_display_name,
                     line=dict(width=1.5, color='#2563eb'),
-                    hovertemplate=f'<b>{local_time_header}</b>: %{{x}}<br><b>Value</b>: %{{y}}<extra></extra>'
+                    hovertemplate=f'<b>{local_time_header}</b>: %{{x}}<br><b>{texts["hover_val"]}</b>: %{{y}}<extra></extra>'
                 ))
-
-                anom_x, anom_y = detect_srt_anomalies(x_times, y_values, zh_metric_name)
+                '''
+                anom_x, anom_y = detect_srt_anomalies(x_times, y_values, metric_name)
                 if anom_x:
                     fig.add_trace(go.Scatter(
                         x=anom_x,
                         y=anom_y,
                         mode='markers',
-                        name='Warning',
+                        name=texts["warn_title"],
                         marker=dict(color='#ef4444', size=7, symbol='x-open'),
-                        hovertemplate='<b>[Warning]</b><br>Time: %{x}<br>Value: <b>%{y}</b><extra></extra>'
+                        hovertemplate=f'<b>[{texts["warn_title"]}]</b><br>{texts["warn_time"]}: %{{x}}<br>{texts["hover_val"]}: <b>%{{y}}</b><extra></extra>'
                     ))
+                '''
                 fig.update_layout(
                     title=dict(
                         text=f"SRT Data Trend Charts: <b>{full_display_name}</b>",
@@ -299,7 +343,7 @@ def process_log_task(task_id: str, target_tz_key: str = DEFAULT_TIMEZONE_KEY) ->
                         type="date"
                     ),
                     yaxis=dict(
-                        title=dict(text=zh_metric_name, font=dict(size=12, color="#475569")),
+                        title=dict(text=metric_name, font=dict(size=12, color="#475569")),
                         showgrid=True,
                         gridcolor="#f1f5f9",
                         zeroline=True,
@@ -324,6 +368,27 @@ def process_log_task(task_id: str, target_tz_key: str = DEFAULT_TIMEZONE_KEY) ->
                     }
                 )
 
-                print(f"[{task_id}] {lag('consolelog.export_html_done')} {safe_file_prefix}")
+                print(f"[{task_id}][{lang_code}] {lag('consolelog.export_html_done')} {safe_file_prefix}")
+
+def process_log_task(task_id: str, target_tz_key: str = DEFAULT_TIMEZONE_KEY) -> bool:
+    input_dir = os.path.join(STORAGE_UPLOADS_DIR, task_id)
+    json_path = os.path.join(input_dir, "log.json")
+    
+    if not os.path.exists(json_path):
+        raise FileNotFoundError(f"{lag('consolelog.Original_file_notfound')} {json_path}")
+
+    tz_info = get_timezone_info(target_tz_key)
+    local_time_header = tz_info.get("header_name_cn") or tz_info.get("header_name", "Local Time")
+
+    with open(json_path, 'r', encoding='utf-8') as f:
+        data = json.load(f)
+
+    print(f"[{task_id}] Starting log processing for both CN and EN with timezone: {target_tz_key} ({local_time_header})")
+    print(f"[{task_id}] Total number of top-level data items: {len(data)}")
+
+    _process_single_language(task_id, data, target_tz_key, CN_PATH)
+    _process_single_language(task_id, data, target_tz_key, EN_PATH)
+    update_task_status(task_id, status='Completed', analysis_timezone=target_tz_key)
+
     print(f"[{task_id}] {lag('consolelog.analysis_done')}")
     return True

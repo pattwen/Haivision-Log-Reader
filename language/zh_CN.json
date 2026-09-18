@@ -16,10 +16,14 @@
     "card_title": "分析任务列表",
     "add_new": "新增上传",
     "col_id": "Task ID",
+    "mnemonic_name": "助记名",
     "col_filename": "原始文件名",
+    "base_timezone": "时区",
     "col_upload_time": "上传时间",
     "col_status": "当前状态",
     "col_action": "操作",
+    "input_mnemonic_name": "输入助记备注...",
+    "save_mnemonic_name": "保存助记名",
     "error_prefix": "错误: ",
     "btn_start": "开始分析",
     "btn_processing": "分析中...",
@@ -44,6 +48,10 @@
     "select_chart": "选择图表：",
     "no_charts": "暂无生成的数据可视化图表。"
   },
+  "settinglist":{
+    "settinglist_title": "配置页",
+    "save_all": "保存全部配置"
+  },
   "consolelog":{
     "Original_file_notfound": "找不到原始日志文件:",
     "export_html_done": "成功导出交互图表:",
@@ -57,6 +65,7 @@
     "analysis_task_error": "分析过程发生异常:",
     "mission_notexist": "任务不存在",
     "mission_analysing": "任务正在分析中，请勿重复操作。",
+    "mission_completed": "任务已经分析结束，请勿重复操作。",
     "mission_started": "已开始分析任务",
     "mission_file_deleted": "任务及存储文件已删除",
     "upload_file_notexist": "未检测到上传文件",
@@ -64,5 +73,10 @@
     "upload_file_notselect": "未选择文件",
     "upload_file_success": "文件上传成功",
     "upload_file_supportonly": "仅支持 .json"
+  },
+  "jsconsolelog": {
+    "update_successful_hello": "上传成功，正在前往任务管理...",
+    "askfor_delete_task": "确定要删除此任务及所有分析数据吗？"
+
   }
 }

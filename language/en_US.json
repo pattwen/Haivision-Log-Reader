@@ -16,10 +16,14 @@
     "card_title": "Analysis Task List",
     "add_new": "Upload New",
     "col_id": "Task ID",
+    "mnemonic_name": "Mnemonic Name",
     "col_filename": "Original Filename",
+    "base_timezone": "Timezone",
     "col_upload_time": "Upload Time",
     "col_status": "Status",
     "col_action": "Action",
+    "input_mnemonic_name": "Enter mnemonic name...",
+    "save_mnemonic_name": "Save Mnemonic Name",
     "error_prefix": "Error: ",
     "btn_start": "Start Analysis",
     "btn_processing": "Processing...",
@@ -57,6 +61,7 @@
     "analysis_task_error": "An exception occurred during the analysis process:",
     "mission_notexist": "Task does not exist",
     "mission_analysing": "The task is currently being analyzed; please do not repeat the operation.",
+    "mission_completed": "The task analysis has completed; please do not repeat the operation.",
     "mission_started": "Task analysis has started",
     "mission_file_deleted": "Tasks and stored files have been deleted",
     "upload_file_notexist": "No uploaded file detected",
@@ -64,5 +69,9 @@
     "upload_file_notselect": "No file selected",
     "upload_file_success": "File uploaded successfully",
     "upload_file_supportonly": "Supports only .json"
+  },
+  "jsconsolelog": {
+    "update_successful_hello": "Upload successful! Redirecting to the task management page...",
+    "askfor_delete_task": "Are you sure you want to delete this task and all analysis data?"
   }
 }

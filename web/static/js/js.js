@@ -52,7 +52,7 @@ async function uploadFile(file) {
     formData.append('file', file);
 
     const uploadStatus = document.getElementById('upload-status');
-    if (uploadStatus) uploadStatus.innerText = 'uploading...';
+    if (uploadStatus) uploadStatus.innerText = 'Uploading...';
 
     try {
         const result = await handleFetch('/api/upload', {

@@ -15,8 +15,10 @@
         <table>
             <thead>
                 <tr>
-                    <th>{{ t('tasks.col_id') }}</th>
+                    <!--<th>{{ t('tasks.col_id') }}</th>-->
+                    <th>{{ t('tasks.mnemonic_name') }}</th>
                     <th>{{ t('tasks.col_filename') }}</th>
+                    <th>{{ t('tasks.base_timezone') }}</th>
                     <th>{{ t('tasks.col_upload_time') }}</th>
                     <th>{{ t('tasks.col_status') }}</th>
                     <th>{{ t('tasks.col_action') }}</th>
@@ -25,8 +27,33 @@
             <tbody>
                 {% for task in tasks %}
                 <tr>
-                    <td><code>{{ task.id }}</code></td>
+                    <!--<td><code>{{ task.id }}</code></td>-->
+                    <td>
+                        <div style="display: flex; gap: 0.3rem; align-items: center;">
+                            <input type="text" 
+                                   id="mnemonic-{{ task.id }}" 
+                                   value="{{ task.mnemonic_name or '' }}" 
+                                   placeholder="{{ t('tasks.mnemonic_name') }}" 
+                                   style="padding: 0.25rem 0.5rem; font-size: 0.85rem; border: 1px solid #cbd5e1; border-radius: 4px; width: 150px;">
+                            <button type="button" 
+                                    onclick="saveMnemonic('{{ task.id }}')" 
+                                    class="btn btn-secondary" 
+                                    style="padding: 0.25rem 0.5rem; font-size: 0.8rem;" 
+                                    title="{{ t('tasks.save_mnemonic_name') }}">
+                                <i class="fa-solid fa-floppy-disk"></i>
+                            </button>
+                        </div>
+                    </td>
                     <td><i class="fa-regular fa-file-code" style="margin-right: 0.35rem; color: var(--text-muted);"></i>{{ task.filename }}</td>
+                    <td>
+                        {% if task.analysis_timezone %}
+                            <span class="badge" style="background-color: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; font-weight: normal;">
+                                <i class="fa-solid fa-globe" style="margin-right: 0.25rem; color: #64748b;"></i>{{ task.analysis_timezone }}
+                            </span>
+                        {% else %}
+                            <span style="color: var(--text-muted); font-size: 0.85rem;">-</span>
+                        {% endif %}
+                    </td>
                     <td>{{ task.created_at.strftime('%Y-%m-%d %H:%M:%S') if task.created_at else '-' }}</td>
                     <td>
                         <span class="badge badge-{{ task.status }}">
@@ -65,7 +92,6 @@
                                 <i class="fa-solid fa-rotate-right" style="margin-right: 0.25rem;"></i>{{ t('tasks.btn_reanalyze') }}
                             </button>
                         {% endif %}
-
                         <button onclick="deleteTask('{{ task.id }}')" class="btn btn-danger" style="margin-left: 0.5rem;">
                             <i class="fa-regular fa-trash-can" style="margin-right: 0.25rem;"></i>{{ t('tasks.btn_delete') }}
                         </button>
@@ -73,7 +99,7 @@
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                    <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">
                         <i class="fa-solid fa-inbox fa-2x" style="display: block; margin-bottom: 0.5rem; color: #cbd5e1;"></i>
                         {{ t('tasks.empty') }}
                     </td>
@@ -116,4 +142,36 @@
     </div>
     {% endif %}
 </div>
+
+<script>
+function saveMnemonic(taskId) {
+    const inputEle = document.getElementById(`mnemonic-${taskId}`);
+    const mnemonicName = inputEle.value;
+    
+    fetch(`/api/tasks/${taskId}/mnemonic`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ mnemonic_name: mnemonicName })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === 'success') {
+            inputEle.style.borderColor = '#16a34a';
+            inputEle.style.backgroundColor = '#f0fdf4';
+            setTimeout(() => { 
+                inputEle.style.borderColor = '#cbd5e1'; 
+                inputEle.style.backgroundColor = '#ffffff';
+            }, 1200);
+        } else {
+            alert(data.message || 'Error！');
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        alert('Error！');
+    });
+}
+</script>
 {% endblock %}

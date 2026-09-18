@@ -1,11 +1,28 @@
 import os
 from flask import Blueprint, render_template, send_from_directory, abort
-
 from db.task_manager import get_task_by_id
 from config.sys_config import STORAGE_RESULTS_DIR
-from core.i18n_utils import t as lag
+from core.i18n_utils import t as lag, get_current_lang
 
 report_bp = Blueprint('report', __name__)
+
+def get_valid_result_dir(task_id: str) -> str:
+    current_lang = get_current_lang()
+    
+    lang_dir = os.path.join(STORAGE_RESULTS_DIR, task_id, current_lang)
+    if os.path.exists(lang_dir):
+        return lang_dir
+        
+    fallback_cn_dir = os.path.join(STORAGE_RESULTS_DIR, task_id, "zh_CN")
+    if os.path.exists(fallback_cn_dir):
+        return fallback_cn_dir
+        
+    root_dir = os.path.join(STORAGE_RESULTS_DIR, task_id)
+    if os.path.exists(root_dir):
+        return root_dir
+        
+    return ""
+
 
 @report_bp.route('/report/<task_id>', methods=['GET'])
 def view_report(task_id):
@@ -16,8 +33,8 @@ def view_report(task_id):
     if task.status != 'Completed':
         return f"[{task.status}] {lag('htmlreturn.mission_state_wrong')}", 400
 
-    result_dir = os.path.join(STORAGE_RESULTS_DIR, task_id)
-    if not os.path.exists(result_dir):
+    result_dir = get_valid_result_dir(task_id)
+    if not result_dir or not os.path.exists(result_dir):
         return lag('htmlreturn.logfile_deleted'), 404
 
     all_files = os.listdir(result_dir)
@@ -34,9 +51,10 @@ def view_report(task_id):
         csv_files=csv_files
     )
 
+
 @report_bp.route('/report/<task_id>/files/<filename>', methods=['GET'])
 def get_report_file(task_id, filename):
-    result_dir = os.path.join(STORAGE_RESULTS_DIR, task_id)
-    if not os.path.exists(os.path.join(result_dir, filename)):
+    result_dir = get_valid_result_dir(task_id)
+    if not result_dir or not os.path.exists(os.path.join(result_dir, filename)):
         abort(404)
     return send_from_directory(result_dir, filename)
