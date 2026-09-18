@@ -7,7 +7,7 @@
     <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">
         <div>
             <h2>{{ t('report.card_title') }}</h2>
-            <p style="color: var(--text-muted); margin: 0.25rem 0 0 0;">{{ t('report.task_id') }}: <code>{{ task.id }}</code> | {{ t('report.filename') }}: {{ task.filename }}</p>
+            <p style="color: var(--text-muted); margin: 0.25rem 0 0 0;">{{ t('report.mnemonic_name') if task.mnemonic_name else t('report.task_id') }}: <code>{{ task.mnemonic_name if task.mnemonic_name  else task.id }}</code> | {{ t('report.filename') }}: {{ task.filename }}</p>
         </div>
         <a href="{{ url_for('tasks.task_list_page') }}" class="btn btn-secondary">{{ t('report.back_to_list') }}</a>
     </div>
